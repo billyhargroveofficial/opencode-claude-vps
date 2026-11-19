@@ -90,12 +90,17 @@ export async function session(input: {
   readonly persist: boolean
   readonly resume?: string
 }): Promise<Options> {
+  const system = input.system
+  const workspace = `OpenCode tools operate on the client computer (${process.platform}), in ${JSON.stringify(input.directory)}. Use that directory for tool paths and commands. The remote Claude process directory belongs only to the session host.`
+  const remotePreset = process.env.OPENCODE_CLAUDE_SSH_TARGET && typeof system === "object" && "preset" in system
   const options: Options = {
     ...base(input),
     cwd: input.directory,
     model: input.model,
     effort: input.effort,
-    systemPrompt: input.system,
+    systemPrompt: remotePreset
+      ? { ...system, append: [system.append, workspace].filter(Boolean).join("\n\n") }
+      : system,
     includePartialMessages: true,
     persistSession: input.persist,
     hooks: ToolHooks.make(input.pending),

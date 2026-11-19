@@ -1,3 +1,4 @@
+import { sshIO } from "./claude/ssh.js"
 import { define } from "@opencode/plugin/effect/plugin"
 import { Effect, Option, Stream } from "effect"
 import { ClaudeIO } from "./claude/io.js"
@@ -45,4 +46,5 @@ export const make = (io: ClaudeIO.Interface, registry = ClaudeSessions.registry(
     }),
   } satisfies PluginInternal.InternalPlugin)
 
-export const ClaudeAgentPlugin = make(ClaudeIO.real)
+const sshTarget = process.env.OPENCODE_CLAUDE_SSH_TARGET
+export const ClaudeAgentPlugin = make(sshTarget ? sshIO(sshTarget) : ClaudeIO.real)

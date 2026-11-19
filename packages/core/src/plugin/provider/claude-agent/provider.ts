@@ -47,7 +47,12 @@ export const register = Effect.fn("ClaudeProvider.register")(function* (
   io: ClaudeIO.Interface,
 ) {
   const saved = Schema.decodeUnknownOption(Catalog)(yield* ctx.storage.get(CATALOG_KEY))
-  const current = { catalog: Option.getOrElse(saved, (): Catalog => ({ models: [] })) }
+  const remoteModel = process.env.OPENCODE_CLAUDE_SSH_TARGET ? process.env.OPENCODE_CLAUDE_SSH_MODEL : undefined
+  const current = {
+    catalog: remoteModel
+      ? ({ models: [{ id: remoteModel, name: remoteModel, efforts: [] }] } as Catalog)
+      : Option.getOrElse(saved, (): Catalog => ({ models: [] })),
+  }
 
   yield* ctx.provider.transform((editor) => {
     const source = current.catalog.priceSource
@@ -62,6 +67,9 @@ export const register = Effect.fn("ClaudeProvider.register")(function* (
       models: current.catalog.models.map((model) => toModel(model, prices)),
     })
   })
+
+  // A compatible endpoint may serve a model outside Claude Code’s built-in discovery list.
+  if (remoteModel) return
 
   const checked = new Set<string>()
   yield* SubscriptionRef.changes(status.state).pipe(

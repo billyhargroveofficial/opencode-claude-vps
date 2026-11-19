@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+umask 077
+self=$(realpath "$0")
+project=$(CDPATH='' cd -- "$(dirname -- "$self")/../.." && pwd)
+root="${OPENCODE_VPS_STATE:-$HOME/.local/share/opencode-claude-vps}"
+export XDG_DATA_HOME="$root/data" XDG_CONFIG_HOME="$root/config" XDG_CACHE_HOME="$root/cache" XDG_STATE_HOME="$root/state"
+export CLAUDE_CONFIG_DIR="$root/sdk-client"
+export OPENCODE_CLAUDE_SSH_MODEL=deepseek-flash
+export OPENCODE_CLAUDE_SSH_TARGET="${OPENCODE_CLAUDE_SSH_TARGET:-opencode-nl}"
+export OPENCODE_CLAUDE_SSH_CONFIG="${OPENCODE_CLAUDE_SSH_CONFIG:-$HOME/.config/opencode-claude-vps/ssh_config}"
+if [ -z "${OPENCODE_CONFIG_CONTENT:-}" ]; then
+  export OPENCODE_CONFIG_CONTENT='{"model":"claude-agent/deepseek-flash"}'
+fi
+unset ANTHROPIC_AUTH_TOKEN ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN DEEPSEEK_API_KEY
+mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME" "$XDG_STATE_HOME" "$CLAUDE_CONFIG_DIR"
+exec "$project/packages/cli/dist/cli-darwin-arm64/bin/opencode" "$@" --standalone
