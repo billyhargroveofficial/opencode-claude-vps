@@ -1,3 +1,7 @@
+## Claude Code over SSH
+
+This fork runs Claude Code with DeepSeek on a Linux VPS. OpenCode runs on an Apple Silicon Mac, where it reads and edits files and executes shell commands. See the [prototype setup and end-to-end test results](prototype/claude-ssh/README.md).
+
 <p align="center">
   <a href="https://opencode.ai">
     <picture>
